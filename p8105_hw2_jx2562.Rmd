@@ -17,18 +17,35 @@ Clean the _pols-month.csv_.
 pm_df =
   read_csv("data/pols-month.csv") |>
   separate(mon, into = c("year", "month", "day"), sep = "-") |>
-  mutate(
-    month = as.numeric(month),
-    month = month.name[month]) |>
+  mutate(month = as.numeric(month))|>
   pivot_longer(
     cols = starts_with("prez"),
     names_to = "president",
     names_prefix = "prez_",
     values_to = "party") |>
   filter(party != 0) |>
-  select(-c(party, day))
+  select(-c(party, day)) |>
+  arrange(year,month) |>
+  mutate(month = month.name[month])
 
 tail(pm_df)
+
+```
+
+Clean the _snp.csv_ with the similar process as above. Mainly focus on the representation of date.
+```{r clean_snp, message=F}
+snp_df =
+  read_csv("data/snp.csv") |>
+  separate(date, into = c("month", "day", "year"), sep = "/") |>
+  mutate(
+    month = as.numeric(month),
+    year = as.numeric(year),
+    year = ifelse(year > 25, 1900 + year, 2000 + year)) |>
+  select(year, month, close) |>
+  arrange(year,month) |>
+  mutate(month = month.name[month])
+
+tail(snp_df)
 
 ```
 
