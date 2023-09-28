@@ -17,7 +17,9 @@ Clean the _pols-month.csv_.
 pm_df =
   read_csv("data/pols-month.csv") |>
   separate(mon, into = c("year", "month", "day"), sep = "-") |>
-  mutate(month = as.numeric(month))|>
+  mutate(
+    month = as.numeric(month),
+    year = as.numeric(year))|>
   pivot_longer(
     cols = starts_with("prez"),
     names_to = "president",
@@ -26,7 +28,8 @@ pm_df =
   filter(party != 0) |>
   select(-c(party, day)) |>
   arrange(year,month) |>
-  mutate(month = month.abb[month])
+  mutate(month = month.abb[month]) |>
+  janitor::clean_names()
 
 tail(pm_df)
 
@@ -43,7 +46,8 @@ snp_df =
     year = ifelse(year > 25, 1900 + year, 2000 + year)) |>
   select(year, month, close) |>
   arrange(year,month) |>
-  mutate(month = month.abb[month])
+  mutate(month = month.abb[month]) |>
+  janitor::clean_names()
 
 tail(snp_df)
 
@@ -58,10 +62,21 @@ uep_df =
     cols = Jan:Dec,
     names_to = "month",
     values_to = "unemployment"
-  ) 
+  ) |>
+  janitor::clean_names()
 
 tail(uep_df)
 ```
 
 Here the three data frames are all lead by year and month with a correct order. Next, we merge the three data frames together.
+
+```{r merge_data, message=F}
+merge_df = pm_df |>
+  full_join(snp_df) |>
+  full_join(uep_df)
+
+tail(merge_df)
+
+```
+
 
