@@ -26,7 +26,7 @@ pm_df =
   filter(party != 0) |>
   select(-c(party, day)) |>
   arrange(year,month) |>
-  mutate(month = month.name[month])
+  mutate(month = month.abb[month])
 
 tail(pm_df)
 
@@ -43,10 +43,25 @@ snp_df =
     year = ifelse(year > 25, 1900 + year, 2000 + year)) |>
   select(year, month, close) |>
   arrange(year,month) |>
-  mutate(month = month.name[month])
+  mutate(month = month.abb[month])
 
 tail(snp_df)
 
 ```
 
+Clean the _unemployment.csv_ so that it could fit in the previous two datasets.
+
+```{r clean_unemployment, message=F}
+uep_df =
+  read_csv("data/unemployment.csv") |>
+  pivot_longer(
+    cols = Jan:Dec,
+    names_to = "month",
+    values_to = "unemployment"
+  ) 
+
+tail(uep_df)
+```
+
+Here the three data frames are all lead by year and month with a correct order. Next, we merge the three data frames together.
 
