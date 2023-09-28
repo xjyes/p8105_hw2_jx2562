@@ -1,0 +1,6 @@
+---
+title: "p8105_hw2_jx2562"
+author: "Jingyi"
+output: github_document
+---
+
