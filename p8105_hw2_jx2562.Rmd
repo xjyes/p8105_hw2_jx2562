@@ -4,3 +4,32 @@ author: "Jingyi"
 output: github_document
 ---
 
+```{r, message=F}
+library(tidyverse)
+```
+
+## Problem 1
+
+In this problem, we aim to merge three data sets, _pols-month.csv_, _unemployment.csv_, and _snp.csv_ into one. 
+
+Clean the _pols-month.csv_.
+```{r clean_pols-month, message=F}
+pm_df =
+  read_csv("data/pols-month.csv") |>
+  separate(mon, into = c("year", "month", "day"), sep = "-") |>
+  mutate(
+    month = as.numeric(month),
+    month = month.name[month]) |>
+  pivot_longer(
+    cols = starts_with("prez"),
+    names_to = "president",
+    names_prefix = "prez_",
+    values_to = "party") |>
+  filter(party != 0) |>
+  select(-c(party, day))
+
+tail(pm_df)
+
+```
+
+
