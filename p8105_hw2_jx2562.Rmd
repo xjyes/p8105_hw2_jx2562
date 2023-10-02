@@ -31,7 +31,7 @@ pm_df =
   mutate(month = month.abb[month]) |>
   janitor::clean_names()
 
-tail(pm_df)
+head(pm_df)
 
 ```
 
@@ -49,7 +49,7 @@ snp_df =
   mutate(month = month.abb[month]) |>
   janitor::clean_names()
 
-tail(snp_df)
+head(snp_df)
 
 ```
 
@@ -65,7 +65,7 @@ uep_df =
   ) |>
   janitor::clean_names()
 
-tail(uep_df)
+head(uep_df)
 ```
 
 Here the three data frames are all lead by year and month with a correct order. Next, we merge the three data frames together.
@@ -75,8 +75,24 @@ merge_df = pm_df |>
   full_join(snp_df) |>
   full_join(uep_df)
 
-tail(merge_df)
+head(merge_df)
 
 ```
+
+The **merge_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by full_join(). In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(merge_df)`_ columns and _`r nrow(merge_df)`_ rows. It has the variables **`r colnames(merge_df)`**. The recorded time of the data ranges from _`r paste0(merge_df$year[1],sep = "-", merge_df$month[1])`_ to _`r paste0(merge_df$year[nrow(merge_df)], sep = "-", merge_df$month[nrow(merge_df)])`_.
+
+The **pm_df** has _`r ncol(pm_df)`_ columns and _`r nrow(pm_df)`_ rows related to the number of national politicians who are democratic or republican at any given time. It contains variables **`r colnames(pm_df)`**. And the time ranges from _`r paste0(pm_df$year[1],sep = "-", pm_df$month[1])`_ to _`r paste0(pm_df$year[nrow(pm_df)], sep = "-", pm_df$month[nrow(pm_df)])`_.
+
+The **snp_df** has _`r ncol(snp_df)`_ columns and _`r nrow(snp_df)`_ rows related to Standard & Poor’s stock market index (S&P), often used as a representative measure of stock market as a whole. It contains variables **`r colnames(snp_df)`**. And the time ranges from _`r paste0(snp_df$year[1],sep = "-", snp_df$month[1])`_ to _`r paste0(snp_df$year[nrow(snp_df)], sep = "-", snp_df$month[nrow(snp_df)])`_.
+
+The **uep_df** has _`r ncol(uep_df)`_ columns and _`r nrow(uep_df)`_ rows related the unemployment rate at a given time. It contains variables **`r colnames(uep_df)`**. And the time ranges from _`r paste0(uep_df$year[1],sep = "-", uep_df$month[1])`_ to _`r paste0(uep_df$year[nrow(uep_df)], sep = "-", uep_df$month[nrow(uep_df)])`_.
+
+
+
+
+
+
+
+
 
 
