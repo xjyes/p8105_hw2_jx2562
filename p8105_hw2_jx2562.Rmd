@@ -6,6 +6,7 @@ output: github_document
 
 ```{r, message=F}
 library(tidyverse)
+library(readxl)
 ```
 
 ## Problem 1
@@ -71,15 +72,15 @@ head(uep_df)
 Here the three data frames are all lead by year and month with a correct order. Next, we merge the three data frames together.
 
 ```{r merge_data, message=F}
-merge_df = pm_df |>
+crisis_df = pm_df |>
   full_join(snp_df) |>
   full_join(uep_df)
 
-head(merge_df)
+head(crisis_df)
 
 ```
 
-The **merge_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by full_join(). In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(merge_df)`_ columns and _`r nrow(merge_df)`_ rows. It has the variables **`r colnames(merge_df)`**. The recorded time of the data ranges from _`r paste0(merge_df$year[1],sep = "-", merge_df$month[1])`_ to _`r paste0(merge_df$year[nrow(merge_df)], sep = "-", merge_df$month[nrow(merge_df)])`_.
+The **crisis_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by full_join(). In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(crisis_df)`_ columns and _`r nrow(crisis_df)`_ rows. It has the variables **`r colnames(crisis_df)`**. The recorded time of the data ranges from _`r paste0(crisis_df$year[1],sep = "-", crisis_df$month[1])`_ to _`r paste0(crisis_df$year[nrow(crisis_df)], sep = "-", crisis_df$month[nrow(crisis_df)])`_.
 
 The **pm_df** has _`r ncol(pm_df)`_ columns and _`r nrow(pm_df)`_ rows related to the number of national politicians who are democratic or republican at any given time. It contains variables **`r colnames(pm_df)`**. And the time ranges from _`r paste0(pm_df$year[1],sep = "-", pm_df$month[1])`_ to _`r paste0(pm_df$year[nrow(pm_df)], sep = "-", pm_df$month[nrow(pm_df)])`_.
 
@@ -88,11 +89,82 @@ The **snp_df** has _`r ncol(snp_df)`_ columns and _`r nrow(snp_df)`_ rows relate
 The **uep_df** has _`r ncol(uep_df)`_ columns and _`r nrow(uep_df)`_ rows related the unemployment rate at a given time. It contains variables **`r colnames(uep_df)`**. And the time ranges from _`r paste0(uep_df$year[1],sep = "-", uep_df$month[1])`_ to _`r paste0(uep_df$year[nrow(uep_df)], sep = "-", uep_df$month[nrow(uep_df)])`_.
 
 
+## Problem 2
 
+First, define a path to the dataset. 
 
+```{r}
+path_to_data = "./data/202207 Trash Wheel Collection Data.xlsx"
+```
 
+Read and clean the Mr. Trashwheel dataset. 
 
+```{r}
+mr_df = 
+	read_xlsx(
+		path = path_to_data,
+		sheet = "Mr. Trash Wheel",
+		range = cell_cols("A:N")) |>
+	janitor::clean_names() |> 
+	drop_na(dumpster) |>
+  mutate(
+    homes_powered = round(as.numeric(weight_tons)*500/30, 2),
+    type = "Mr.",
+    year = as.numeric(year)) |>
+  select(-dumpster) 
 
+head(mr_df)
+```
 
+Read and clean the Professor Trashwheel dataset. 
 
+```{r}
+prof_df = 
+	read_xlsx(
+		path = path_to_data,
+		sheet = "Professor Trash Wheel",
+		range = cell_cols("A:M")) |>
+	janitor::clean_names() |> 
+	drop_na(dumpster) |>
+  mutate(
+    homes_powered = round(as.numeric(weight_tons)*500/30, 2),
+    type = "Professor",
+    year = as.numeric(year)) |>
+  select(-dumpster)
+
+head(prof_df)
+```
+
+Read and clean the Gwynnda Trashwheel dataset. 
+
+```{r}
+gwynnda_df = 
+	read_xlsx(
+		path = path_to_data,
+		sheet = "Gwynnda Trash Wheel",
+		range = cell_cols("A:K")) |>
+	janitor::clean_names() |> 
+	drop_na(dumpster) |>
+  mutate(
+    homes_powered = round(as.numeric(weight_tons)*500/30, 2),
+    type = "Gwynnda",
+    year = as.numeric(year)) |>
+  select(-dumpster)
+
+head(prof_df)
+```
+
+Merge the three data sets
+
+```{r}
+trashwheel_df = mr_df |>
+  bind_rows(prof_df) |>
+  bind_rows(gwynnda_df)
+
+trashwheel_df =
+  select(trashwheel_df, month:homes_powered, plastic_bags, type) |>
+  arrange(date)
+
+head(trashwheel_df)
+```
 
