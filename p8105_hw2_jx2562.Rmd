@@ -80,7 +80,7 @@ head(crisis_df)
 
 ```
 
-The **crisis_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by left_join(). In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(crisis_df)`_ columns and _`r nrow(crisis_df)`_ rows. It has the variables **`r colnames(crisis_df)`**. The recorded time of the data ranges from _`r paste0(crisis_df$year[1],sep = "-", crisis_df$month[1])`_ to _`r paste0(crisis_df$year[nrow(crisis_df)], sep = "-", crisis_df$month[nrow(crisis_df)])`_.
+The **crisis_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by `left_join()`. In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(crisis_df)`_ columns and _`r nrow(crisis_df)`_ rows. It has the variables **`r colnames(crisis_df)`**. The recorded time of the data ranges from _`r paste0(crisis_df$year[1],sep = "-", crisis_df$month[1])`_ to _`r paste0(crisis_df$year[nrow(crisis_df)], sep = "-", crisis_df$month[nrow(crisis_df)])`_.
 
 The **pm_df** has _`r ncol(pm_df)`_ columns and _`r nrow(pm_df)`_ rows related to the number of national politicians who are democratic or republican at any given time. It contains variables **`r colnames(pm_df)`**. And the time ranges from _`r paste0(pm_df$year[1],sep = "-", pm_df$month[1])`_ to _`r paste0(pm_df$year[nrow(pm_df)], sep = "-", pm_df$month[nrow(pm_df)])`_.
 
@@ -199,6 +199,8 @@ baseline_filter = baseline_df |>
     age_at_onset = as.numeric(age_at_onset)
   ) |>
   filter(age_at_onset != ".")
+
+head(baseline_filter)
 ```
 
 The samples are filtered by MCI development. Those participants who did not have MCI by the date of latest record are discarded. 
@@ -213,10 +215,66 @@ The data has features are stated below:
 *  The proportion of women as APOE4 carriers is `r round(nrow(baseline_filter[baseline_filter$sex == "female" & baseline_filter$apoe4 == "carrier",]) / nrow(baseline_filter[baseline_filter$sex == "female",]), 2)` 
 
 
+Clean the biomarker data
+
+```{r, message = F}
+biomarker_df = 
+  read_csv("data/mci_amyloid.csv", skip = 1, show_col_types = FALSE) |>
+  janitor::clean_names() |>
+  select(id = study_id, everything()) |> 
+  mutate(
+    baseline = as.numeric(baseline),
+    time_8 = as.numeric(time_8)
+  )
+
+head(biomarker_df)
+```
+
+The longitudinally observed biomarker values are loaded. The name of the column `study_id` was changed to `id` for easier data sets merging in the later steps.
+
+*  The longitudinal amyloid β 42/40 ratio of `r nrow(biomarker_df)` participants were collected.
+
+*  The variables include `r colnames(biomarker_df)`, with `r ncol(biomarker_df) - 1` time points.
+
+*  The average ratio at the baseline is `r round(mean(biomarker_df$baseline, na.rm = T), 4)`. The average ratio at the time 8 is `r round(mean(biomarker_df$time_8, na.rm = T), 4)`.
 
 
+Check the different participants in the two sets.
+
+```{r}
+only_baseline = setdiff(baseline_filter$id, biomarker_df$id)
+only_biomarker = setdiff(biomarker_df$id, baseline_filter$id)
+
+```
+
+There are `r length(only_baseline)` participants only appears in the baseline dataset. They are # `r only_baseline` participants. `r length(only_biomarker)` participants only appears in the amyloid dataset. 
 
 
+Merge the demographic information and biomarker information for participants in both data sets.
+
+```{r, message = F}
+MCI_df = 
+  inner_join(baseline_filter, biomarker_df)
+
+head(MCI_df)
+write.csv(MCI_df, "data/MCI_summary.csv")
+```
+
+The `MCI_df` combines the information from `baseline_filter` and `biomarker_df`. The details of the data frame is stated below:
+
+*   It has `r nrow(MCI_df)` observations and `r ncol(MCI_df)` variables.
+
+*   Their average age at the beginning of the study is `r round(mean(MCI_df$current_age), 2)`, ranging from `r min(MCI_df$current_age)` to `r max(MCI_df$current_age)` .
+
+*   Their average age at the onset of MCI is `r round(mean(MCI_df$age_at_onset), 2)`, ranging from `r min(MCI_df$age_at_onset)` to `r max(MCI_df$age_at_onset)` .
+
+*   Among a total of `r nrow(MCI_df)` participants, `r MCI_df |> filter(sex == "male") |> nrow()` are males and `r MCI_df |> filter(sex == "female") |> nrow()` are females.
+
+*   `r MCI_df |> filter(apoe4 == "carrier") |> nrow()` are APOE4 carriers and `r MCI_df |> filter(apoe4 == "non-carrier") |> nrow()` are non-carriers.
+
+*   The amyloid β 42/40 ratio at the baseline has a average of `r round(mean(biomarker_df$baseline, na.rm = T), 4)`, ranging from `r min(MCI_df$baseline, na.rm=T)` to `r max(MCI_df$baseline, na.rm=T)` .
+
+*   The amyloid β 42/40 ratio at the time 8 has a average of `r round(mean(biomarker_df$time_8, na.rm = T), 4)`, ranging from `r min(MCI_df$time_8, na.rm=T)` to `r max(MCI_df$time_8, na.rm=T)` .
 
 
 
