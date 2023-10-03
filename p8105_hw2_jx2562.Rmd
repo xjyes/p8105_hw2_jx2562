@@ -73,14 +73,14 @@ Here the three data frames are all lead by year and month with a correct order. 
 
 ```{r merge_data, message=F}
 crisis_df = pm_df |>
-  full_join(snp_df) |>
-  full_join(uep_df)
+  left_join(snp_df) |>
+  left_join(uep_df)
 
 head(crisis_df)
 
 ```
 
-The **crisis_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by full_join(). In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(crisis_df)`_ columns and _`r nrow(crisis_df)`_ rows. It has the variables **`r colnames(crisis_df)`**. The recorded time of the data ranges from _`r paste0(crisis_df$year[1],sep = "-", crisis_df$month[1])`_ to _`r paste0(crisis_df$year[nrow(crisis_df)], sep = "-", crisis_df$month[nrow(crisis_df)])`_.
+The **crisis_df** is combined by the three data frames, **pm_df**, **snp_df**, and **uep_df**, by left_join(). In this way, all values in the three data frames are kept. The merged data frame has _`r ncol(crisis_df)`_ columns and _`r nrow(crisis_df)`_ rows. It has the variables **`r colnames(crisis_df)`**. The recorded time of the data ranges from _`r paste0(crisis_df$year[1],sep = "-", crisis_df$month[1])`_ to _`r paste0(crisis_df$year[nrow(crisis_df)], sep = "-", crisis_df$month[nrow(crisis_df)])`_.
 
 The **pm_df** has _`r ncol(pm_df)`_ columns and _`r nrow(pm_df)`_ rows related to the number of national politicians who are democratic or republican at any given time. It contains variables **`r colnames(pm_df)`**. And the time ranges from _`r paste0(pm_df$year[1],sep = "-", pm_df$month[1])`_ to _`r paste0(pm_df$year[nrow(pm_df)], sep = "-", pm_df$month[nrow(pm_df)])`_.
 
@@ -154,7 +154,7 @@ gwynnda_df =
 head(prof_df)
 ```
 
-Merge the three data sets
+Merge the three data sets.
 
 ```{r}
 trashwheel_df = mr_df |>
@@ -163,8 +163,59 @@ trashwheel_df = mr_df |>
 
 trashwheel_df =
   select(trashwheel_df, month:homes_powered, plastic_bags, type) |>
-  arrange(date)
+  arrange(year, month)
 
 head(trashwheel_df)
 ```
+
+This **trashwheel_df** merged information from the Mr., Professor and Gwynnda Trashwheel trash collector in Baltimore, Maryland. The dataset contains information on year, month, and trash collected, include some specific kinds of trash. There are a total of _`r nrow(trashwheel_df)`_ rows in our final dataset. Additional data sheets include month precipitation data.
+
+In these datasets:
+
+* The variables in the final data frame **trashwheel_df** are **`r colnames(trashwheel_df)`**.
+
+*  The duration of the data collected in the final data set is from _`r min(trashwheel_df$date)`_ to _`r max(trashwheel_df$date)`_. By checking the _year_ variable of the starting date, there are some errors in data collection. Despite the outlier, the corrected time duration is from _`r pmin(trashwheel_df$date)[2]`_ to _`r max(trashwheel_df$date)`_.
+
+*  The mean weight in tons of trash collected during these years is `r trashwheel_df |> pull(weight_tons) |> sum() |> round(2)`.
+
+*  The total weight of trash collected by Professor Trash Wheel is `r prof_df |> pull(weight_tons) |> sum()`.
+
+*  The total number of cigarette butts collected by Gwynnda Trash Wheel in July of 2021 is `r gwynnda_df |> filter(year == 2021 & month == "July") |> pull(cigarette_butts) |> sum()/1000` thousands.
+
+
+## Problem 3
+
+First, we read and clean the baseline data.
+
+```{r}
+baseline_df = 
+  read_csv("data/MCI_baseline.csv", skip = 1,show_col_types = FALSE) |>
+  janitor::clean_names()
+
+baseline_filter = baseline_df |>
+  mutate(
+    sex = ifelse(sex == 1, "male", "female"),
+    apoe4 = ifelse(apoe4 == 1, "carrier", "non-carrier"),
+    age_at_onset = as.numeric(age_at_onset)
+  ) |>
+  filter(age_at_onset != ".")
+```
+
+The samples are filtered by MCI development. Those participants who did not have MCI by the date of latest record are discarded. 
+The data has features are stated below:
+
+*  In the beginning, a total of `r nrow(baseline_df)` participants was recruited, with `r baseline_df |> filter(sex == 1) |> nrow()` males and `r baseline_df |> filter(sex == 0) |> nrow()` females. 
+
+*  Among these participants, `r nrow(baseline_filter)` participants developed MCI by the end of follow-up, with  `r baseline_filter |> filter(sex == "male") |> nrow()` males and `r baseline_filter |>  filter(sex == "female") |> nrow()` females.
+
+*  The average age of all data collected is `r round(mean(baseline_df$current_age), 2)`. The average age of filtered samples when the study began is `r round(mean(baseline_filter$current_age), 2)`. The average MCI onset age is `r round(mean(baseline_filter$age_at_onset), 2)`. 
+
+*  The proportion of women as APOE4 carriers is `r round(nrow(baseline_filter[baseline_filter$sex == "female" & baseline_filter$apoe4 == "carrier",]) / nrow(baseline_filter[baseline_filter$sex == "female",]), 2)` 
+
+
+
+
+
+
+
 
