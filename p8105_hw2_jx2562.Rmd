@@ -94,7 +94,7 @@ The **uep_df** has _`r ncol(uep_df)`_ columns and _`r nrow(uep_df)`_ rows relate
 First, define a path to the dataset. 
 
 ```{r}
-path_to_data = "./data/202207 Trash Wheel Collection Data.xlsx"
+path_to_data = "./data/202309 Trash Wheel Collection Data.xlsx"
 ```
 
 Read and clean the Mr. Trashwheel dataset. 
@@ -211,6 +211,8 @@ The data has features are stated below:
 *  The average age of all data collected is `r round(mean(baseline_df$current_age), 2)`. The average age of filtered samples when the study began is `r round(mean(baseline_filter$current_age), 2)`. The average MCI onset age is `r round(mean(baseline_filter$age_at_onset), 2)`. 
 
 *  The proportion of women as APOE4 carriers is `r round(nrow(baseline_filter[baseline_filter$sex == "female" & baseline_filter$apoe4 == "carrier",]) / nrow(baseline_filter[baseline_filter$sex == "female",]), 2)` 
+
+
 
 
 
