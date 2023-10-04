@@ -202,7 +202,7 @@ baseline_filter = baseline_df |>
 head(baseline_filter)
 ```
 
-The samples are filtered by MCI development. Those participants who did not have MCI by the date of latest record are discarded. 
+The samples are filtered by MCI development. Those participants who had MCI before the date of first record are discarded. 
 The data has features are stated below:
 
 *  In the beginning, a total of `r nrow(baseline_df)` participants was recruited, with `r baseline_df |> filter(sex == 1) |> nrow()` males and `r baseline_df |> filter(sex == 0) |> nrow()` females. Despite the participants who developed MCI before the study, we have `r nrow(baseline_filter)`
