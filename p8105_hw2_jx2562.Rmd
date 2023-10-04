@@ -196,9 +196,8 @@ baseline_filter = baseline_df |>
   mutate(
     sex = ifelse(sex == 1, "male", "female"),
     apoe4 = ifelse(apoe4 == 1, "carrier", "non-carrier"),
-    age_at_onset = as.numeric(age_at_onset)
   ) |>
-  filter(age_at_onset != ".")
+  filter(age_at_onset=="." | current_age < age_at_onset)
 
 head(baseline_filter)
 ```
@@ -206,11 +205,11 @@ head(baseline_filter)
 The samples are filtered by MCI development. Those participants who did not have MCI by the date of latest record are discarded. 
 The data has features are stated below:
 
-*  In the beginning, a total of `r nrow(baseline_df)` participants was recruited, with `r baseline_df |> filter(sex == 1) |> nrow()` males and `r baseline_df |> filter(sex == 0) |> nrow()` females. 
+*  In the beginning, a total of `r nrow(baseline_df)` participants was recruited, with `r baseline_df |> filter(sex == 1) |> nrow()` males and `r baseline_df |> filter(sex == 0) |> nrow()` females. Despite the participants who developed MCI before the study, we have `r nrow(baseline_filter)`
 
-*  Among these participants, `r nrow(baseline_filter)` participants developed MCI by the end of follow-up, with  `r baseline_filter |> filter(sex == "male") |> nrow()` males and `r baseline_filter |>  filter(sex == "female") |> nrow()` females.
+*  Among these participants, `r baseline_filter |> filter(age_at_onset != ".") |> nrow()` participants developed MCI by the end of follow-up, with  `r baseline_filter |> filter(sex == "male") |> nrow()` males and `r baseline_filter |>  filter(sex == "female") |> nrow()` females.
 
-*  The average age of all data collected is `r round(mean(baseline_df$current_age), 2)`. The average age of filtered samples when the study began is `r round(mean(baseline_filter$current_age), 2)`. The average MCI onset age is `r round(mean(baseline_filter$age_at_onset), 2)`. 
+*  The average age of all data collected is `r round(mean(baseline_df$current_age), 2)`. The average age of filtered samples when the study began is `r round(mean(baseline_filter$current_age), 2)`. The average MCI onset age in the filtered sample is `r baseline_filter |> filter(age_at_onset != ".") |> pull(age_at_onset) |> as.numeric() |> mean() |> round(2)` 
 
 *  The proportion of women as APOE4 carriers is `r round(nrow(baseline_filter[baseline_filter$sex == "female" & baseline_filter$apoe4 == "carrier",]) / nrow(baseline_filter[baseline_filter$sex == "female",]), 2)` 
 
@@ -247,7 +246,7 @@ only_biomarker = setdiff(biomarker_df$id, baseline_filter$id)
 
 ```
 
-There are `r length(only_baseline)` participants only appears in the baseline dataset. They are # `r only_baseline` participants. `r length(only_biomarker)` participants only appears in the amyloid dataset. 
+There are `r length(only_baseline)` participants only appears in the baseline dataset. They are # `r only_baseline` participants. `r length(only_biomarker)` participants only appears in the amyloid dataset. They are # `r only_biomarker` participants.
 
 
 Merge the demographic information and biomarker information for participants in both data sets.
@@ -266,7 +265,7 @@ The `MCI_df` combines the information from `baseline_filter` and `biomarker_df`.
 
 *   Their average age at the beginning of the study is `r round(mean(MCI_df$current_age), 2)`, ranging from `r min(MCI_df$current_age)` to `r max(MCI_df$current_age)` .
 
-*   Their average age at the onset of MCI is `r round(mean(MCI_df$age_at_onset), 2)`, ranging from `r min(MCI_df$age_at_onset)` to `r max(MCI_df$age_at_onset)` .
+*   Their average age at the onset of MCI is `r MCI_df |> filter(age_at_onset != ".") |> pull(age_at_onset) |> as.numeric() |> mean() |> round(2)`, ranging from `r MCI_df |> filter(age_at_onset != ".") |> pull(age_at_onset) |> as.numeric() |> min()` to `r max(MCI_df$age_at_onset)` .
 
 *   Among a total of `r nrow(MCI_df)` participants, `r MCI_df |> filter(sex == "male") |> nrow()` are males and `r MCI_df |> filter(sex == "female") |> nrow()` are females.
 
